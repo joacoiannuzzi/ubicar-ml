@@ -7,7 +7,9 @@ app = Flask(__name__)
 @app.route('/predict', methods=['POST'])
 def predict_endpoint():
     request_data = request.get_data().decode("utf-8")
+    print(request_data)
     result = predict(request_data)
+    print(result)
     return str(result)
 
 
