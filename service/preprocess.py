@@ -5,7 +5,8 @@ import pandas as pd
 
 # Funcion que nos permite definir si una propiedad está ubicada dentro de un barrio privado
 def obtener_m2(propiedadSeleccionada, propiedades):
-    print(propiedadSeleccionada)
+    # print(propiedadSeleccionada)
+    # print("-----------------------")
     nearPropsPrice = []
     propsIndex = []
     count = 0
@@ -20,23 +21,32 @@ def obtener_m2(propiedadSeleccionada, propiedades):
     # Recorremos cada propiedad en la zona y obtenemos la distancia entre la propiedad seleccionada
     # y las propiedades de la zona.
     for i, propiedad in propiedades.iterrows():
-        print("--------------")
-        print(propiedad['lat'], propiedad['lon'])
+        # print("--------------")
+        # print(propiedad)
+        # print(propiedad['lat'], propiedad['lon'])
+        # print("--------------")
+        # print(propiedadSeleccionada)
         # print(propiedadSeleccionada['lat'], propiedadSeleccionada['lon'])
-        print("--------------")
         # Obtengo la distancia entre la seleccionada y la propiedades
-        distancia = gpxpy.geo.haversine_distance(propiedad['lat'], propiedad['lon'], propiedadSeleccionada['lat'], propiedadSeleccionada['lon'])
+        distancia = gpxpy.geo.haversine_distance(propiedad['lat'], propiedad['lon'], propiedadSeleccionada['lat'],
+                                                 propiedadSeleccionada['lon'])
         # vemos la latlon del barrio y la latlon de la propiedad, nos devuelve en metros la distancia
         # Si la distancia no es un nan
         if ~np.isnan(distancia):
             # Si la distancia ES MENOR A 1000, agregamos al array el precio.
             if (distancia < 1000):
+                print(propiedad['lat'], propiedad['lon'])
+                print("DISTANCIA MENOR A 1000")
                 propsIndex.append(i)
                 nearPropsPrice.append(
                     propiedad['price'] / propiedad['surface_total'])  # precio / sup_total => precio * m^2
                 count = count + 1
 
-    m2 = sum(nearPropsPrice) / count  # sacamos el total del precio / total de propiedades
+    if count <= 0:
+        m2 = propiedadSeleccionada['price'] / propiedadSeleccionada['surface_total']
+        print("No hay casas cercas")
+    else:
+        m2 = sum(nearPropsPrice) / count  # sacamos el total del precio / total de propiedades
 
     if (len(propsIndex) > 1):
         for idx in propsIndex:
@@ -94,10 +104,10 @@ def preprocess(dataframe, propDataFrame):
     arr_superficie = arr_superficie[:, None]
 
     # Obtengo el array de numpy de Superficies
-    arr_rooms = propDataFrame['rooms'].values
+    # arr_rooms = propDataFrame['rooms'].values
 
     # La paso de 1 dimension a 2.
-    arr_rooms = arr_rooms[:, None]
+    # arr_rooms = arr_rooms[:, None]
 
     # df_mul_rooms_pType= pd.DataFrame(col_ohe_pTypes * arr_rooms)
 
@@ -113,5 +123,10 @@ def preprocess(dataframe, propDataFrame):
     # Le agrego las nuevas columnas al dataFrame
     # df_mul_barrio
     propDataFrame = pd.concat([propDataFrame, df_mul_places, df_mul_pTypes, df_mul_barrio], axis=1)
+
+    # Agrego las columnas que estan en el dataframe de todas las propiedades pero no en el de la propiedad que busco la info
+    propDataFrame[dataframe.columns.difference(propDataFrame.columns)] = 0
+    propDataFrame.drop(propDataFrame.columns.difference(dataframe.columns), axis=1, inplace=True)
+    propDataFrame = propDataFrame[dataframe.columns]
 
     return propDataFrame

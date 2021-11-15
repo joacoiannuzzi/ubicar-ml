@@ -6,11 +6,14 @@ app = Flask(__name__)
 
 @app.route('/predict', methods=['POST'])
 def predict_endpoint():
-    request_data = request.get_data().decode("utf-8")
-    print(request_data)
+    data = request.get_data()
+    print(f"data {data}")
+    request_data = data.decode("utf-8")
+    print(f"request_data {request_data}")
     result = predict(request_data)
     print(result)
-    return str(result)
+    print(f"result[0] {result[0]}")
+    return str(result[0])
 
 
 if __name__ == '__main__':
