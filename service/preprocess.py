@@ -1,7 +1,14 @@
 import gpxpy.geo
 import numpy as np
 import pandas as pd
+from geopandas import GeoDataFrame
+from shapely.geometry import LineString, Polygon, Point, box, shape
 
+def setM2ForHousesInPoly(polyArray, propiedad):
+    poly = polyArray[0]
+    m2 = polyArray[1]
+    if poly.contains(propiedad.geometry):
+            propiedad['nearestM2'] = m2
 
 # Funcion que nos permite definir si una propiedad está ubicada dentro de un barrio privado
 def obtener_m2(propiedadSeleccionada, propiedades):
@@ -62,7 +69,15 @@ def preprocess(dataframe, propDataFrame):
     #                                         propiedad['departamento_nombre'], case=False))]
     #         dataframe.loc[i, 'nearestM2'] = obtener_m2(propiedad, df_busqueda)
 
+
     propDataFrame.loc['nearestM2'] = obtener_m2(propDataFrame, dataframe)
+
+    # Dynamic algorythm
+
+    # geometry = [Point(xy) for xy in zip(propsDf.lon, propsDf.lat)]
+    # propsGDF = GeoDataFrame(propsDf, crs="EPSG:4326", geometry=geometry)  # GeoDataframe de las properties
+
+
 
     cols_to_remove = ['Unnamed: 0', 'id', 'lat', 'lon', 'departamento_id', 'departamento_nombre', 'municipio_id',
                       'municipio_nombre', 'provincia_id', 'provincia_nombre', 'dAirport', 'dPort', 'dTrainStation',
